@@ -1,34 +1,41 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
+from app.database import get_db
 from app import models
-from app.schemas import TaskCreate, TaskOut
-from app.database import SessionLocal
+from app.schemas import TaskCreate, TaskOut, TaskUpdate
 
 router = APIRouter(
     prefix="/tasks",
     tags=["Tasks"]
 )
 
-
 # CREATE
-@router.post("/", response_model=schemas.Task, status_code=status.HTTP_201_CREATED)
-def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
-    db_task = models.Task(**task.model_dump())
-    db.add(db_task)
-    db.commit()
-    db.refresh(db_task)
-    return db_task
+@router.post(
+    "/",
+    response_model=TaskOut,
+    status_code=status.HTTP_201_CREATED
+)
+def create_task(task: TaskCreate, db: Session = Depends(get_db)):
+    new_task = models.Task(
+        title=task.title,
+        completed=task.completed
+    )
 
+    db.add(new_task)
+    db.commit()
+    db.refresh(new_task)
+
+    return new_task
 
 # READ ALL
-@router.get("/", response_model=list[schemas.Task])
+@router.get("/", response_model=list[TaskOut])
 def get_tasks(db: Session = Depends(get_db)):
     return db.query(models.Task).all()
 
 
 # READ ONE
-@router.get("/{task_id}", response_model=schemas.Task)
+@router.get("/{task_id}", response_model=TaskOut)
 def get_task(task_id: int, db: Session = Depends(get_db)):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if not task:
@@ -37,10 +44,10 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
 
 
 # UPDATE
-@router.put("/{task_id}", response_model=schemas.Task)
+@router.put("/{task_id}", response_model=TaskOut)
 def update_task(
     task_id: int,
-    task_data: schemas.TaskUpdate,
+    task_data: TaskUpdate,
     db: Session = Depends(get_db)
 ):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
