@@ -10,3 +10,5 @@ Base.metadata.create_all(bind=engine)
 @app.get("/")
 def root():
     return {"status": "ok"}
+
+app.include_router(tasks.router)
