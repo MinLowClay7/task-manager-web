@@ -1,3 +1,1 @@
-from .tasks import TaskCreate, TaskOut
-from .tasks import Task, TaskCreate
-from .tasks import TaskUpdate
+from .tasks import TaskCreate, TaskUpdate, TaskOut
