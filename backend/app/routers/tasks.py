@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-
+from typing import Optional
 from app.database import get_db
 from app import schemas, models
 from app.crud import tasks as crud_tasks
@@ -23,9 +23,21 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
     return task
 
 
-@router.get("/", response_model=list[schemas.tasks.Task])
-def read_tasks(db: Session = Depends(get_db)):
-    return crud_tasks.get_tasks(db)
+@router.get("/", response_model=list[schemas.Task])
+def get_tasks(
+    completed: Optional[bool] = Query(None),
+    search: Optional[str] = Query(None, min_length=1),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Task)
+
+    if completed is not None:
+        query = query.filter(models.Task.completed == completed)
+
+    if search:
+        query = query.filter(models.Task.title.ilike(f"%{search}%"))
+
+    return query.all()
 
 @router.post("/", response_model=schemas.tasks.Task, status_code=status.HTTP_201_CREATED)
 def create_task(task: schemas.tasks.TaskCreate, db: Session = Depends(get_db)):
