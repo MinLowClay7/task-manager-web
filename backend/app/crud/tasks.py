@@ -21,3 +21,15 @@ def delete_task(db: Session, task_id: int):
     db.delete(task)
     db.commit()
     return task
+
+def update_task(db: Session, task_id: int, task_update):
+    task = get_task(db, task_id)
+    if not task:
+        return None
+
+    for key, value in task_update.dict(exclude_unset=True).items():
+        setattr(task, key, value)
+
+    db.commit()
+    db.refresh(task)
+    return task

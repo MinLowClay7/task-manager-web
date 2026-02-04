@@ -1,24 +1,21 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class TaskBase(BaseModel):
     title: str
-    description: str | None = None
+    description: Optional[str] = None
     completed: bool = False
 
 class TaskCreate(TaskBase):
     pass
 
 class TaskUpdate(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    completed: bool | None = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    completed: Optional[bool] = None
 
 class Task(TaskBase):
     id: int
 
     class Config:
         from_attributes = True
-
-class TaskOut(Task):
-    pass
-

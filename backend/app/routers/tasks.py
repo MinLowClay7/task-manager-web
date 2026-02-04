@@ -24,3 +24,14 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
     if not deleted:
         raise HTTPException(status_code=404, detail="Task not found")
 
+@router.patch("/{task_id}", response_model=schemas.tasks.Task)
+def update_task(
+    task_id: int,
+    task: schemas.tasks.TaskUpdate,
+    db: Session = Depends(get_db)
+):
+    updated_task = crud_tasks.update_task(db, task_id, task)
+    if not updated_task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return updated_task
+
