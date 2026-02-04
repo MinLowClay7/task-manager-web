@@ -2,13 +2,26 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app import schemas
+from app import schemas, models
 from app.crud import tasks as crud_tasks
 
 router = APIRouter(
     prefix="/tasks",
     tags=["Tasks"]
 )
+
+@router.get("/{task_id}", response_model=schemas.Task)
+def get_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+
+    return task
+
 
 @router.get("/", response_model=list[schemas.tasks.Task])
 def read_tasks(db: Session = Depends(get_db)):
@@ -20,18 +33,37 @@ def create_task(task: schemas.tasks.TaskCreate, db: Session = Depends(get_db)):
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(task_id: int, db: Session = Depends(get_db)):
-    deleted = crud_tasks.delete_task(db, task_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Task not found")
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
 
-@router.patch("/{task_id}", response_model=schemas.tasks.Task)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+
+    db.delete(task)
+    db.commit()
+
+
+@router.patch("/{task_id}", response_model=schemas.Task)
 def update_task(
     task_id: int,
-    task: schemas.tasks.TaskUpdate,
+    task_data: schemas.TaskUpdate,
     db: Session = Depends(get_db)
 ):
-    updated_task = crud_tasks.update_task(db, task_id, task)
-    if not updated_task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return updated_task
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+
+    for field, value in task_data.model_dump(exclude_unset=True).items():
+        setattr(task, field, value)
+
+    db.commit()
+    db.refresh(task)
+    return task
+
 
