@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Integer, String
+from datetime import datetime, UTC
+from sqlalchemy import Boolean, Integer, String, Column, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
@@ -9,4 +10,5 @@ class Task(Base):
     title: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     completed: Mapped[bool] = mapped_column(Boolean, default=False)
-
+    
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC))

@@ -86,7 +86,7 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
     db.commit()
 
 
-@router.patch("/{task_id}", response_model=schemas.Task)
+@router.put("/{task_id}", response_model=schemas.Task)
 def update_task(
     task_id: int,
     task_data: schemas.TaskUpdate,
