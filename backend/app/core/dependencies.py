@@ -7,6 +7,7 @@ from app.core.config import SECRET_KEY, ALGORITHM
 from app.database import get_db
 from app.models import User
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def get_current_user(
@@ -28,3 +29,6 @@ def get_current_user(
     if not user:
         raise HTTPException(status_code=401)
     return user
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()

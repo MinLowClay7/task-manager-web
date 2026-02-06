@@ -1,3 +1,4 @@
+from app import crud
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -5,6 +6,7 @@ from app import schemas
 from app.crud import users as crud_users
 from app.database import get_db
 from app.core.dependencies import get_current_user
+from app.core.security import get_current_user
 from app.models import User
 
 router = APIRouter(
@@ -31,3 +33,11 @@ def create_user(
 @router.get("/me")
 def read_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+@router.post("/", response_model=schemas.Task)
+def create_task(
+    task_in: schemas.TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return crud.create_task(db, task_in)
