@@ -3,8 +3,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import asc, desc
 from typing import Optional
 from app.database import get_db
+from app.core.security import get_current_user
 from app import schemas, models
 from app.crud import tasks as crud_tasks
+from app.models.users import User
 
 router = APIRouter(
     prefix="/tasks",
@@ -23,6 +25,12 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
 
     return task
 
+@router.get("/", response_model=list[schemas.Task])
+def get_tasks(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return crud_tasks.get_tasks_by_user(db, current_user.id)
 
 @router.get("/", response_model=list[schemas.Task])
 def get_tasks(
@@ -69,8 +77,12 @@ def get_tasks(
 
 
 @router.post("/", response_model=schemas.tasks.Task, status_code=status.HTTP_201_CREATED)
-def create_task(task: schemas.tasks.TaskCreate, db: Session = Depends(get_db)):
-    return crud_tasks.create_task(db, task)
+def create_task(
+    task_in: schemas.TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return crud_tasks.create_task(db, task_in, current_user.id)
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(task_id: int, db: Session = Depends(get_db)):

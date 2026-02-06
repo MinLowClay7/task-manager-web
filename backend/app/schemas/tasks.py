@@ -4,7 +4,7 @@ from datetime import datetime
 
 class TaskBase(BaseModel):
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     completed: bool = False
 
 class TaskCreate(TaskBase):
@@ -19,6 +19,7 @@ class Task(TaskBase):
     id: int
     completed: bool
     created_at: datetime
+    user_id: int
 
     model_config = ConfigDict(
         from_attributes=True
