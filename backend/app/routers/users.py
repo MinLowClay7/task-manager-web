@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app import schemas
 from app.crud import users as crud_users
 from app.database import get_db
+from app.core.dependencies import get_current_user
+from app.models import User
 
 router = APIRouter(
     prefix="/users",
@@ -24,3 +26,8 @@ def create_user(
         )
 
     return crud_users.create_user(db, user_in)
+
+
+@router.get("/me")
+def read_me(current_user: User = Depends(get_current_user)):
+    return current_user
