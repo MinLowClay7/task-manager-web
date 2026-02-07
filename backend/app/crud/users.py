@@ -5,14 +5,17 @@ from app.core.security import get_password_hash, verify_password
 
 def create_user(db: Session, user_in: schemas.UserCreate):
     hashed_password = get_password_hash(user_in.password)
-    db_user = models.User(
+
+    user = models.User(
         email=user_in.email,
         hashed_password=hashed_password,
     )
-    db.add(db_user)
+
+    db.add(user)
     db.commit()
-    db.refresh(db_user)
-    return db_user
+    db.refresh(user)
+    return user
+
 
 
 def authenticate_user(db: Session, email: str, password: str):
