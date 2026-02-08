@@ -219,3 +219,25 @@ def test_user_cannot_delete_other_task(client):
     )
 
     assert response.status_code == 204
+
+# Tests para asegurar que la paginación funciona correctamente
+def test_task_pagination(client):
+    token = create_user_and_token(
+        client, "pagination@test.com", "password123"
+    )
+
+    # Crear 15 tareas
+    for i in range(15):
+        client.post(
+            "/tasks/",
+            json={"title": f"Tarea {i}"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+    r = client.get(
+        "/tasks/?limit=10&offset=0",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert r.status_code == 200
+    assert len(r.json()) == 10

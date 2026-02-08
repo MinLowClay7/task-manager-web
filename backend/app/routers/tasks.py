@@ -17,7 +17,12 @@ router = APIRouter(
 
 # Endpoint para obtener una tarea por ID
 @router.get("/{task_id}", response_model=schemas.Task)
-def get_task(task_id: int, db: Session = Depends(get_db)):
+def get_task(
+    task_id: int, 
+    db: Session = Depends(get_db),
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    ):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
 
     if not task:
@@ -33,8 +38,15 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
 def get_tasks(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
 ):
-    return crud_tasks.get_tasks_by_user(db, current_user.id)
+    return crud_tasks.get_tasks_by_user(
+        db, 
+        current_user.id,
+        limit=limit,
+        offset=offset,
+        )
 
 # Endpoint para crear una nueva tarea (requiere autenticación)
 @router.get("/", response_model=list[schemas.Task])
