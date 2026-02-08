@@ -1,8 +1,16 @@
+# Modelo de tarea para la aplicación de gestión de tareas
+#
+# Este modelo define la estructura de la tabla "tasks" en la base de datos, 
+# con campos para el título, descripción, estado de completado, 
+# fecha de creación y relación con el usuario propietario.
+#
+# Importaciones necesarias para definir el modelo de tarea
 from datetime import datetime, UTC
 from sqlalchemy import Boolean, Integer, String, Column, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
+# Definición del modelo de tarea
 class Task(Base):
     __tablename__ = "tasks"
 

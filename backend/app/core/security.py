@@ -1,3 +1,4 @@
+# importaciones necesarias
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -13,6 +14,7 @@ from app.database import get_db
 from app.schemas.token import Token
 from app.repositories.users import get_user_by_email
 
+# Configuración de seguridad y autenticación
 SECRET_KEY = "super-secret-key"  # luego se mueve a .env
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -21,6 +23,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
+# Funciones de seguridad y autenticación
 def _prehash_password(password: str) -> str:
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
@@ -30,12 +33,14 @@ def get_password_hash(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
+# Función para crear un token de acceso JWT
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+# Función para obtener el usuario actual a partir del token JWT
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),

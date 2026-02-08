@@ -1,6 +1,8 @@
+# importaciones necesarias
 from sqlalchemy.orm import Session
 from app import models, schemas
 
+# funciones CRUD para tareas
 def get_task(db: Session, task_id: int):
     return db.query(models.Task).filter(models.Task.id == task_id).first()
 
@@ -48,4 +50,3 @@ def update_task(db: Session, task_id: int, user_id: int, task_in: schemas.TaskUp
     db.commit()
     db.refresh(task)
     return task
-

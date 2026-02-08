@@ -1,3 +1,4 @@
+# importaciones necesarias
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import asc, desc
@@ -8,11 +9,13 @@ from app import schemas, models
 from app.crud import tasks as crud_tasks
 from app.models.users import User
 
+# definimos el router para tareas
 router = APIRouter(
     prefix="/tasks",
     tags=["Tasks"]
 )
 
+# Endpoint para obtener una tarea por ID
 @router.get("/{task_id}", response_model=schemas.Task)
 def get_task(task_id: int, db: Session = Depends(get_db)):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
@@ -25,6 +28,7 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
 
     return task
 
+# Endpoint para listar tareas con filtros, paginación y ordenamiento
 @router.get("/", response_model=list[schemas.Task])
 def get_tasks(
     db: Session = Depends(get_db),
@@ -32,6 +36,7 @@ def get_tasks(
 ):
     return crud_tasks.get_tasks_by_user(db, current_user.id)
 
+# Endpoint para crear una nueva tarea (requiere autenticación)
 @router.get("/", response_model=list[schemas.Task])
 def get_tasks(
     completed: Optional[bool] = Query(None),
@@ -75,7 +80,7 @@ def get_tasks(
 
     return query.offset(offset).limit(limit).all()
 
-
+# Endpoint para crear una nueva tarea (requiere autenticación)
 @router.post("/", response_model=schemas.tasks.Task, status_code=status.HTTP_201_CREATED)
 def create_task(
     task_in: schemas.TaskCreate,
@@ -84,20 +89,24 @@ def create_task(
 ):
     return crud_tasks.create_task(db, task_in, current_user.id)
 
+# Endpoint para eliminar una tarea (requiere autenticación)
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+def delete_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    # usamos el CRUD que YA tienes
+    crud_tasks.delete_task(
+        db=db,
+        task_id=task_id,
+        user_id=current_user.id,
+    )
 
-    if not task:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found"
-        )
+    # SIEMPRE 204, exista o no
+    return
 
-    db.delete(task)
-    db.commit()
-
-
+# Endpoint para actualizar una tarea (requiere autenticación)
 @router.put("/{task_id}", response_model=schemas.Task)
 def update_task(
     task_id: int,
@@ -118,5 +127,3 @@ def update_task(
     db.commit()
     db.refresh(task)
     return task
-
-
