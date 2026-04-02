@@ -1,12 +1,13 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class TaskBase(BaseModel):
     title: str
     description: str | None = None
     completed: bool = False
-
+    class Config:
+        orm_mode = True
 class TaskCreate(TaskBase):
     pass
 
@@ -24,3 +25,9 @@ class Task(TaskBase):
     model_config = ConfigDict(
         from_attributes=True
         )
+
+class PaginatedTasks(BaseModel):
+    items: List[Task]
+    total: int
+    limit: int
+    offset: int

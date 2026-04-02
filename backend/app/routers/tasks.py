@@ -139,3 +139,16 @@ def update_task(
     db.commit()
     db.refresh(task)
     return task
+
+def read_tasks(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+):
+    return crud_tasks.get_tasks_by_user_paginated(
+        db,
+        user_id=current_user.id,
+        limit=limit,
+        offset=offset,
+    )

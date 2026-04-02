@@ -33,6 +33,31 @@ def get_tasks_by_user(
         .all()
     )
 
+
+def get_tasks_by_user_paginated(
+    db: Session,
+    user_id: int,
+    limit: int,
+    offset: int,
+):
+    query = db.query(schemas.Task).filter(schemas.Task.user_id == user_id)
+
+    total = query.count()
+
+    items = (
+        query
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    return {
+        "items": items,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
 def create_task(db: Session, task: schemas.TaskCreate, user_id: int):
     db_task = models.Task(
         **task.model_dump(),
